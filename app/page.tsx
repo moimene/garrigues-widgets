@@ -1,25 +1,25 @@
-export default function Home() {
-  return (
-    <main
-      style={{
-        minHeight: "100vh",
-        padding: "40px",
-        fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-      }}
-    >
-      <h1>Centro de Widgets Garrigues</h1>
-      <p>
-        Desde aquí podrás acceder a cada widget, probarlos, y obtener el iframe
-        para incrustarlos en cualquier web o producto.
-      </p>
-
-      <h2 style={{ marginTop: "30px" }}>Widgets disponibles</h2>
-      <ul style={{ fontSize: "18px", lineHeight: "2" }}>
-        <li>
-          <a href="/widgets/arras">Widget Arras</a>
-        </li>
-      </ul>
-    </main>
-  );
+{
+  "name": "garrigues-widgets",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "next": "14.2.5",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "@openai/chatkit": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5",
+    "eslint": "^9",
+    "eslint-config-next": "14.2.5"
+  }
 }
-
