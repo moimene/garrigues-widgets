@@ -1,18 +1,26 @@
 "use client";
 
 import { useEffect } from "react";
-import { ChatKit } from "@openai/chatkit";
 
 export default function ArrasWidget() {
   useEffect(() => {
-    const widget = new ChatKit({
-      workflowId: process.env.NEXT_PUBLIC_ARRAS_WORKFLOW_ID!,
-      version: process.env.NEXT_PUBLIC_ARRAS_WORKFLOW_VERSION!,
-      container: "#widget-container",
-      fileUploads: true,
-    });
+    // Cargar ChatKit desde CDN
+    const script = document.createElement("script");
+    script.src = "https://cdn.openai.com/chatkit/chatkit.min.js";
+    script.onload = () => {
+      // Inicializar ChatKit al cargar el script
+      const chatkit = new (window as any).ChatKit({
+        workflowId: process.env.NEXT_PUBLIC_ARRAS_WORKFLOW_ID!,
+        version: process.env.NEXT_PUBLIC_ARRAS_WORKFLOW_VERSION!,
+        container: "#widget-container",
+        fileUploads: true,
+      });
+    };
+    document.body.appendChild(script);
 
-    return () => widget.destroy();
+    return () => {
+      document.body.removeChild(script);
+    };
   }, []);
 
   return (
