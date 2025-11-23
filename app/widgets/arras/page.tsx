@@ -1,5 +1,4 @@
 "use client";
-export const dynamic = "force-client";
 
 import { useEffect } from "react";
 import { ChatKit } from "@openai/chatkit";
@@ -22,7 +21,6 @@ export default function ArrasWidget() {
         width: "100vw",
         height: "100vh",
         padding: "20px",
-        background: "white"
       }}
     >
       <h1>Widget Arras</h1>
@@ -32,7 +30,7 @@ export default function ArrasWidget() {
           width: "100%",
           height: "90%",
           border: "1px solid #ddd",
-          borderRadius: "10px"
+          borderRadius: "10px",
         }}
       />
     </div>
