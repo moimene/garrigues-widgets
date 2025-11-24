@@ -1,25 +1,20 @@
-{
-  "name": "garrigues-widgets",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "next": "14.2.5",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "@openai/chatkit": "latest"
-  },
-  "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "typescript": "^5",
-    "eslint": "^9",
-    "eslint-config-next": "14.2.5"
-  }
+export default function Home() {
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        padding: "40px",
+        fontFamily: "system-ui, -apple-system, sans-serif",
+      }}
+    >
+      <h1>Centro de Widgets Garrigues</h1>
+      <p>Selecciona un widget:</p>
+
+      <ul style={{ lineHeight: "2", fontSize: "20px" }}>
+        <li>
+          <a href="/widgets/arras">Widget Arras</a>
+        </li>
+      </ul>
+    </main>
+  );
 }
