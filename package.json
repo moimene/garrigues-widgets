@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@openai/chatkit-react": "^1.2.3",
+    "inquirer": "^13.0.1",
     "next": "14.2.5",
+    "picocolors": "^1.1.1",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },

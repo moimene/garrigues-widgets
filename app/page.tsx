@@ -14,7 +14,9 @@ export default function Home() {
         <li>
           <a href="/widgets/arras">Widget Arras</a>
         </li>
-      </ul>
+      
+<li><a href="/widgets/ARRAS2">Widget ARRAS2</a></li>
+</ul>
     </main>
   );
 }
