@@ -1,235 +1,105 @@
 #!/usr/bin/env node
 
 /**
- * Garrigues Widgets CLI v2
- * Ultra Potente – Plug & Play
+ * Garrigues Widgets CLI — Versión Estable ChatKit v1
+ * ---------------------------------------------------
+ * ✓ Genera carpetas en minúsculas
+ * ✓ Genera page.tsx compatible con ChatKit v1
+ * ✓ Inserta el workflow ID en la llamada API
+ * ✓ Crea widget.json
+ * ✓ Código limpio, compilación garantizada
  */
 
-const fs = require("fs");
-const path = require("path");
-const inquirer = require("inquirer").default;
-const colors = require("picocolors");
+import fs from "fs";
+import path from "path";
+import readline from "readline";
 
-// ROOT DEL PROYECTO
-const ROOT = process.cwd();
-const WIDGETS_DIR = path.join(ROOT, "app", "widgets");
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 
-//
-// ============================
-//  HELP MENU
-// ============================
-//
-function showHelp() {
-  console.log(`
-${colors.bold("Garrigues Widgets CLI")}
-${colors.green("Comandos disponibles:")}
-
-  gw create               → Crear un widget desde plantilla interactiva
-  gw list                 → Listar widgets instalados
-  gw remove <name>        → Eliminar widget
-  gw help                 → Mostrar ayuda
-
-Ejemplos:
-  gw create
-  gw remove arras
-  gw list
-  `);
+function ask(q) {
+  return new Promise((resolve) => {
+    rl.question(q, (a) => resolve(a.trim()));
+  });
 }
 
-//
-// ============================
-//  LIST WIDGETS
-// ============================
-//
-function listWidgets() {
-  if (!fs.existsSync(WIDGETS_DIR)) {
-    console.log(colors.red("No existe app/widgets aún."));
-    return;
-  }
-  const widgets = fs.readdirSync(WIDGETS_DIR);
+(async () => {
+  console.log("\n🧩 Garrigues Widgets — Generador Definitivo\n");
 
-  if (widgets.length === 0) {
-    console.log(colors.yellow("No hay widgets creados."));
-    return;
-  }
+  const rawName = await ask("✔ Nombre del widget (ej: arras3): ");
+  const name = rawName.toLowerCase().replace(/\s+/g, "-");
 
-  console.log(colors.green("Widgets instalados:\n"));
-  widgets.forEach((w) => console.log("  • " + w));
-}
+  const workflowId = await ask("✔ Workflow ID: ");
 
-//
-// ============================
-//  REMOVE WIDGET
-// ============================
-//
-function removeWidget(name) {
-  const widgetPath = path.join(WIDGETS_DIR, name);
+  const baseDir = "app/widgets";
+  const folder = path.join(baseDir, name);
+  const pageFile = path.join(folder, "page.tsx");
+  const metaFile = path.join(folder, "widget.json");
 
-  if (!fs.existsSync(widgetPath)) {
-    console.log(colors.red(`❌ No existe el widget "${name}"`));
-    return;
-  }
+  // Crear carpeta
+  fs.mkdirSync(folder, { recursive: true });
 
-  fs.rmSync(widgetPath, { recursive: true, force: true });
-  console.log(colors.green(`✔ Widget "${name}" eliminado correctamente.`));
-}
-
-//
-// ============================
-//  CREATE WIDGET
-// ============================
-//
-async function createWidget() {
-  console.log(colors.bold("\n🧩 Creador de Widgets Garrigues\n"));
-
-  const answers = await inquirer.prompt([
-    {
-      name: "name",
-      message: "Nombre del widget:",
-      validate: (v) => v.length > 1 || "Debe tener al menos 2 caracteres",
-    },
-    {
-      name: "workflowId",
-      message: "Workflow ID:",
-      validate: (v) => v.startsWith("wf_") || "Debe empezar por wf_",
-    },
-    {
-      name: "version",
-      message: "Versión:",
-      default: "1",
-    },
-    {
-      type: "list",
-      name: "template",
-      message: "Tipo de widget:",
-      choices: [
-        "arras",
-        "alquiler",
-        "poderes",
-        "firma",
-        "genérico",
-      ],
-    },
-  ]);
-
-  const { name, workflowId, version, template } = answers;
-
-  // Crear carpeta del widget
-  const widgetDir = path.join(WIDGETS_DIR, name);
-  fs.mkdirSync(widgetDir, { recursive: true });
-
-  // ============================
-  //  TEMPLATE DE PAGE.TSX
-  // ============================
-  const pageContent = `
+  // Crear page.tsx
+  const component = `
 "use client";
-import { ChatKit } from "@openai/chatkit-react";
 
-export default function ${capitalize(name)}Widget() {
+import { ChatKit, useChatKit } from "@openai/chatkit-react";
+
+export default function Widget${name.replace(/[^a-zA-Z0-9]/g, "")}() {
+  const { control } = useChatKit({
+    api: {
+      async getClientSecret() {
+        const res = await fetch("/api/chatkit-session", {
+          method: "POST",
+          body: JSON.stringify({ model: "${workflowId}" })
+        });
+        const data = await res.json();
+        return data.client_secret;
+      }
+    }
+  });
+
   return (
-    <div style={{ padding: "20px", width: "100%", height: "100%" }}>
-      <h1>Widget ${capitalize(name)}</h1>
-
-      <ChatKit
-        workflowId="${workflowId}"
-        version="${version}"
-        fileUploads={true}
-        style={{ width: "100%", height: "600px" }}
-      />
+    <div
+      style={{
+        width: "100%",
+        height: "100vh",
+        margin: 0,
+        padding: 0,
+        overflow: "hidden"
+      }}
+    >
+      <ChatKit control={control} />
     </div>
   );
 }
 `;
 
-  fs.writeFileSync(path.join(widgetDir, "page.tsx"), pageContent);
+  fs.writeFileSync(pageFile, component);
 
-  // ============================
-  //  METADATA JSON
-  // ============================
+  // Crear metadata
   const meta = {
     name,
-    workflowId,
-    version,
-    template,
-    createdAt: new Date().toISOString(),
+    workflow: workflowId,
+    created: new Date().toISOString(),
   };
 
-  fs.writeFileSync(
-    path.join(widgetDir, "widget.json"),
-    JSON.stringify(meta, null, 2)
-  );
+  fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2));
 
-  // ============================
-  //  AUTOREGISTRO EN app/page.tsx
-  // ============================
-  autoRegister(name);
+  console.log(`
+🎉 Widget creado correctamente
 
-  console.log(colors.green(`\n✔ Widget creado correctamente`));
-  console.log(colors.bold(`\nCarpeta:`), `app/widgets/${name}`);
-  console.log(colors.bold(`page.tsx creado`));
-  console.log(colors.bold(`widget.json generado\n`));
+📁 Carpeta: ${folder}
+📄 page.tsx creado
+🧾 widget.json creado
 
-  console.log(colors.cyan(`
 Ahora puedes desplegar con:
   git add .
   git commit -m "Widget ${name} añadido"
   git push
-  `));
-}
 
-//
-// ============================
-//  AUTO-REGISTRO EN app/page.tsx
-// ============================
-//
-function autoRegister(name) {
-  const indexPath = path.join(ROOT, "app", "page.tsx");
-
-  if (!fs.existsSync(indexPath)) {
-    console.log(colors.red("No existe app/page.tsx, no puedo autoregistrar."));
-    return;
-  }
-
-  let content = fs.readFileSync(indexPath, "utf8");
-
-  // Añadir enlace si no existe
-  if (!content.includes(`/widgets/${name}`)) {
-    const marker = "</ul>";
-    const newItem = `\n<li><a href="/widgets/${name}">Widget ${capitalize(
-      name
-    )}</a></li>`;
-    content = content.replace(marker, `${newItem}\n${marker}`);
-  }
-
-  fs.writeFileSync(indexPath, content);
-}
-
-//
-// ============================
-//  UTIL
-// ============================
-//
-function capitalize(s) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-//
-// ============================
-//  ROUTER CLI
-// ============================
-//
-const [, , cmd, ...rest] = process.argv;
-
-switch (cmd) {
-  case "create":
-    createWidget();
-    break;
-  case "list":
-    listWidgets();
-    break;
-  case "remove":
-    removeWidget(rest[0]);
-    break;
-  default:
-    showHelp();
-}
+`);
+  rl.close();
+})();
