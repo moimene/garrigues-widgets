@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { ChatKit, useChatKit } from "@openai/chatkit-react";
 
 export default function WidgetArras3() {
